@@ -12,7 +12,7 @@ export default class App extends React.Component {
   constructor(){
     super()
     this.state = { xCoords: [], 
-      yCoords: []
+      yCoords: [], recognized: ''
     }
   }
 
@@ -35,7 +35,7 @@ export default class App extends React.Component {
     xCoords.push(xCoord)
     yCoords.push(yCoord)
 
-    this.setState({ xCoords: xCoords, yCoords: yCoords })
+    this.setState({ ...this.state, xCoords: xCoords, yCoords: yCoords })
   }
 
   _getResults = () => {
@@ -59,6 +59,7 @@ export default class App extends React.Component {
           "language": "en"
       }]
     })
+    let foundText = ''
     fetch("https://www.google.com.tw/inputtools/request?ime=handwriting&app=mobilesearch&cs=1&oe=UTF-8", {
       method: 'POST',
       headers: {
@@ -71,29 +72,31 @@ export default class App extends React.Component {
           console.log(response)
           const text = response._bodyText 
           const js = JSON.parse(text)
+          foundText = js[1][0][1]
+          //Clear the state for the next letter
+          this.setState({xCoords: [], yCoords: [], recognized: foundText})
           console.log(js[1][0][1])          
+          this._clear()
         })
         .catch((error) => {
           console.error(error)
         })
-        
-    //Clear the state for the next letter
-    this.setState({xCoords: [], yCoords: []})
   }
+
+
 
   render() {
     return (
-
         <RNDraw
           containerStyle={{backgroundColor: 'rgba(0,0,0,0.01)'}}
-          rewind={ (undo) => {this._undo = undo}}
-          clear={(clear) => {this._clear = clear} }
+          rewind={ (undo) => this._undo = undo}
+          clear={(clear) => this._clear = clear} 
           color={'#000000'}
           strokeWidth={4}
           strokes={this._printStrokes}
           getLetter={this._getResults}
+          myText={this.state.recognized}
         />
-
     );
   }
 }
