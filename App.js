@@ -6,7 +6,21 @@ import RNDraw from 'rn-draw'
 
 const {height, width} = Dimensions.get('window');
 
+const ws = new WebSocket('ws://mirage-relay-server.herokuapp.com')
+ws.onmessage = (e) => {
+  // a message was received
+  console.log(e.data);
+};
 
+ws.onerror = (e) => {
+  // an error occurred
+  console.log(e.message);
+};
+
+ws.onclose = (e) => {
+  // connection closed
+  console.log(e.code, e.reason);
+};
 
 export default class App extends React.Component {
   constructor(){
@@ -60,7 +74,7 @@ export default class App extends React.Component {
       }]
     })
     let foundText = ''
-    fetch("https://www.google.com.tw/inputtools/request?ime=handwriting&app=mobilesearch&cs=1&oe=UTF-8", {
+    fetch("https://www.google.com/inputtools/request?ime=handwriting&app=mobilesearch&cs=1&oe=UTF-8", {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -75,14 +89,17 @@ export default class App extends React.Component {
           foundText = js[1][0][1]
           //Clear the state for the next letter
           this.setState({xCoords: [], yCoords: [], recognized: foundText})
-          console.log(js[1][0][1])          
+          console.log(js[1][0][1])       
+          ws.onopen = () => {
+            // connection opened
+            ws.send('HELLO'); // send a message
+          };   
           this._clear()
         })
         .catch((error) => {
           console.error(error)
         })
   }
-
 
 
   render() {
