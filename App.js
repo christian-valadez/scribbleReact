@@ -6,7 +6,8 @@ import RNDraw from 'rn-draw'
 
 const {height, width} = Dimensions.get('window');
 
-const ws = new WebSocket('ws://mirage-relay-server.herokuapp.com')
+let ws = new WebSocket('ws://mirage-relay-server.herokuapp.com')
+
 ws.onmessage = (e) => {
   // a message was received
   console.log(e.data);
@@ -89,11 +90,17 @@ export default class App extends React.Component {
           foundText = js[1][0][1]
           //Clear the state for the next letter
           this.setState({xCoords: [], yCoords: [], recognized: foundText})
-          console.log(js[1][0][1])       
+          console.log(js[1][0][1])
+          console.log("opening socket")       
           ws.onopen = () => {
             // connection opened
-            ws.send('HELLO'); // send a message
-          };   
+            console.log("sending a message")
+            const message = "broadcast: " + js[1][0][1][0]
+            console.log(message)
+            ws.send(message) // send a message
+          }; 
+          ws.onopen()
+          console.log("socket was opened")
           this._clear()
         })
         .catch((error) => {
